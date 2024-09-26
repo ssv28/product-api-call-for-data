@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -18,7 +16,10 @@ const ProductCards = () => {
       });
   }, []);
 
-  // Function to open a new tab with additional images
+
+
+
+  // // Function to open a new tab with additional images
   const openImagesInNewTab = (images) => {
     const newWindow = window.open();
     if (newWindow) {
@@ -37,7 +38,7 @@ const ProductCards = () => {
               }
               img {
                 width: 300px;
-                height: auto;
+                height: 300px;
                 object-fit: cover;
                 border-radius: 10px;
                 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -46,12 +47,77 @@ const ProductCards = () => {
           </head>
           <body>
             ${images.map((img) => `<img src="${img}" alt="Product Image" />`).join("")}
-            
+
+
           </body>
         </html>
       `);
     }
   };
+
+
+  // const openImagesInNewTab = (product) => {
+  //   const { images, title, price, description, brand, category } = product;
+  //   const newWindow = window.open();
+  //   if (newWindow) {
+  //     newWindow.document.write(
+  //       `<html>
+  //       <head>
+  //         <title>${title}</title>
+  //         <style>
+  //           body {
+  //             font-family: Arial, sans-serif;
+  //             padding: 20px;
+  //             background-color: #f1f1f1;
+  //             color: #333;
+  //           }
+  //           h1 {
+  //             text-align: center;
+  //             font-size: 2rem;
+  //             color: #2874f0;
+  //           }
+  //           .details {
+  //             text-align: center;
+  //             margin-bottom: 20px;
+  //           }
+  //           .details p {
+  //             font-size: 1.2rem;
+  //             margin: 5px 0;
+  //           }
+  //           .images {
+  //             display: flex;
+  //             justify-content: center;
+  //             flex-wrap: wrap;
+  //             gap: 10px;
+  //             padding: 20px;
+  //           }
+  //           img {
+  //             width: 300px;
+  //             height: 300px;
+  //             object-fit: cover;
+  //             border-radius: 10px;
+  //             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <h1>${title}</h1>
+  //         <div class="details">
+  //           <p><strong>Price:</strong> ₹${price}</p>
+  //           <p><strong>Description:</strong> ${description}</p>
+  //           <p><strong>Brand:</strong> ${brand}</p>
+  //           <p><strong>Category:</strong> ${category}</p>
+  //         </div>
+  //         <div class="images">
+  //           ${images.map((img) => `<img src="${img}" alt="Product Image" />`).join("")}
+  //         </div>
+  //       </body>
+  //     </html>
+  //   `);
+  //   }
+  //  };
+
+
 
   return (
     <div style={styles.container}>
@@ -274,4 +340,5 @@ const styles = {
 };
 
 export default ProductCards;
+
 
