@@ -1,103 +1,344 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-const ProductDetails = () => {
-  const [product, setProduct] = useState(null);
-  const [error, setError] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const ProductCards = () => {
+  const [products, setProducts] = useState([]);
 
-  // Function to get query parameters
-  const getQueryParams = () => {
-    const params = new URLSearchParams(window.location.search);
-    return {
-      productId: params.get('productId'),
-    };
-  };
-
-  // Function to fetch product details
-  const fetchProductDetails = async () => {
-    const { productId } = getQueryParams();
-    try {
-      const response = await fetch(`https://dummyjson.com/products/${productId}`);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const productData = await response.json();
-      setProduct(productData);
-      setError(false);
-    } catch (error) {
-      console.error('Failed to fetch product details:', error);
-      setError(true);
-    }
-  };
-
-  // Auto-slider functionality
-  const startSlider = (imageCount) => {
-    setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % imageCount);
-    }, 5000);
-  };
-
+  // Fetch the data from the API
   useEffect(() => {
-    fetchProductDetails();
+    axios
+      .get("https://dummyjson.com/products")
+      .then((res) => {
+        setProducts(res.data.products);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
-  useEffect(() => {
-    if (product && product.images) {
-      startSlider(product.images.length);
-    }
-  }, [product]);
 
-  const backToAll = () => {
-    window.location.href = 'extra.html';
+
+
+  // // Function to open a new tab with additional images
+  const openImagesInNewTab = (images) => {
+    const newWindow = window.open();
+    if (newWindow) {
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>Product Images</title>
+            <style>
+              body {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 20px;
+                background-color: #f1f1f1;
+              }
+              img {
+                width: 300px;
+                height: 300px;
+                object-fit: cover;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+              }
+            </style>
+          </head>
+          <body>
+            ${images.map((img) => `<img src="${img}" alt="Product Image" />`).join("")}
+
+
+          </body>
+        </html>
+      `);
+    }
   };
 
-  if (error) {
-    return (
-      <div className="product-detail">
-        <p>Failed to load product details. Please try again later.</p>
-        <button className="back-button" onClick={fetchProductDetails}>
-          Retry
-        </button>
-      </div>
-    );
-  }
 
-  if (!product) {
-    return <div className="product-detail">Loading...</div>;
-  }
+  // const openImagesInNewTab = (product) => {
+  //   const { images, title, price, description, brand, category } = product;
+  //   const newWindow = window.open();
+  //   if (newWindow) {
+  //     newWindow.document.write(
+  //       `<html>
+  //       <head>
+  //         <title>${title}</title>
+  //         <style>
+  //           body {
+  //             font-family: Arial, sans-serif;
+  //             padding: 20px;
+  //             background-color: #f1f1f1;
+  //             color: #333;
+  //           }
+  //           h1 {
+  //             text-align: center;
+  //             font-size: 2rem;
+  //             color: #2874f0;
+  //           }
+  //           .details {
+  //             text-align: center;
+  //             margin-bottom: 20px;
+  //           }
+  //           .details p {
+  //             font-size: 1.2rem;
+  //             margin: 5px 0;
+  //           }
+  //           .images {
+  //             display: flex;
+  //             justify-content: center;
+  //             flex-wrap: wrap;
+  //             gap: 10px;
+  //             padding: 20px;
+  //           }
+  //           img {
+  //             width: 300px;
+  //             height: 300px;
+  //             object-fit: cover;
+  //             border-radius: 10px;
+  //             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  //           }
+  //         </style>
+  //       </head>
+  //       <body>
+  //         <h1>${title}</h1>
+  //         <div class="details">
+  //           <p><strong>Price:</strong> ₹${price}</p>
+  //           <p><strong>Description:</strong> ${description}</p>
+  //           <p><strong>Brand:</strong> ${brand}</p>
+  //           <p><strong>Category:</strong> ${category}</p>
+  //         </div>
+  //         <div class="images">
+  //           ${images.map((img) => `<img src="${img}" alt="Product Image" />`).join("")}
+  //         </div>
+  //       </body>
+  //     </html>
+  //   `);
+  //   }
+  //  };
+
+
 
   return (
-    <div className="product-detail" id="product-detail">
-      <div className="c">
-        <h1>Product Details</h1>
-      </div>
-      <div className="flex">
-        <div className="im">
-          <div className="slider">
-            <div className="slides" style={{ transform: `translateX(-${currentIndex * 100}%)`, display: 'flex' }}>
-              {product.images.map((img, index) => (
-                <div key={index} className="slide" style={{ minWidth: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <img src={img} alt={`${product.title} image`} style={{ width: '500px', height: '500px' }} />
-                </div>
-              ))}
+    <div style={styles.container}>
+      <h1 style={styles.title}>Products</h1>
+      <div className="card-container" style={styles.cardContainer}>
+        {products.map((product) => (
+          <div key={product.id} className="card" style={styles.card}>
+            {/* Product Image and Discount */}
+            <div style={styles.imageWrapper}>
+              {/* Clickable Image */}
+              <img
+                src={product.thumbnail}
+                alt="Thumbnail"
+                style={styles.productImage}
+                onClick={() => openImagesInNewTab(product.images)} // Open images in new tab
+              />
+              <span style={styles.discountBadge}>{product.discountPercentage}% OFF</span>
             </div>
+
+            {/* Title and Description */}
+            <h2 style={styles.productTitle}>{product.title}</h2>
+            <p style={styles.productDescription}>{product.description.slice(0, 80)}...</p>
+
+            {/* Price, Original Price, and Rating */}
+            <div style={styles.priceSection}>
+              <p style={styles.price}>
+                <b style={{ color: "#ff6200" }}>₹{product.price}</b>
+              </p>
+              <p style={styles.originalPrice}>
+                ₹{(product.price / (1 - product.discountPercentage / 100)).toFixed(2)}
+              </p>
+            </div>
+
+            <div style={styles.flex}>
+              <div style={styles.rating}>
+                <span style={styles.ratingBadge}>{product.rating} ★</span>
+              </div>
+              <p>
+                <b style={{ color: "red" }}>Stock:</b> {product.stock}
+              </p>
+            </div>
+
+            {/* Additional Product Information */}
+            <div style={styles.additionalInfo}>
+              <p>
+                <b style={{ color: "#ff6200" }}>Brand:</b> {product.brand}
+              </p>
+              <p>
+                <b style={{ color: "#ff6200" }}>Category:</b> {product.category}
+              </p>
+              <p>
+                <b style={{ color: "#ff6200" }}>Tags:</b> {product.tags.join(", ")}
+              </p>
+            </div>
+
+            {/* Dimensions Section */}
+            <h4 style={styles.sectionTitle}>Dimensions:</h4>
+            <div style={styles.flex}>
+              <p>
+                <b style={{ color: "#ff6200" }}>Width:</b> {product.dimensions?.width}
+              </p>
+              <p>
+                <b style={{ color: "#ff6200" }}>Height:</b> {product.dimensions?.height}
+              </p>
+              <p>
+                <b style={{ color: "#ff6200" }}>Depth:</b> {product.dimensions?.depth}
+              </p>
+            </div>
+
+            {/* Warranty and Shipping Information */}
+            <h4 style={styles.sectionTitle}>Warranty & Shipping Info:</h4>
+            <p>
+              <b style={{ color: "#ff6200" }}>Warranty:</b> {product.warrantyInformation}
+            </p>
+            <p>
+              <b style={{ color: "#ff6200" }}>Shipping:</b> {product.shippingInformation}
+            </p>
+
+            {/* Meta Section */}
+            <h4 style={styles.sectionTitle}>Product Meta:</h4>
+            <p>
+              <b style={{ color: "#ff6200" }}>Created At:</b> {product.meta?.createdAt}
+            </p>
+            <p>
+              <b style={{ color: "#ff6200" }}>Updated At:</b> {product.meta?.updatedAt}
+            </p>
+
+            {/* Barcodes and Product Images */}
+            <div style={styles.flex}>
+              {product.meta?.barcode && <img src={product.meta.barcode} alt="Barcode" style={styles.image} />}
+              {product.meta?.qrCode && <img src={product.meta.qrCode} alt="QR Code" style={styles.image} />}
+            </div>
+
+            {/* Buy Now Button */}
+            <button style={styles.buyButton}>Buy Now</button>
           </div>
-        </div>
-        <div className="data">
-          <h2>{product.title}</h2>
-          <p>{product.description}</p>
-          <p className="price"><b>₹{product.price}</b></p>
-          <p><b>Brand:</b> {product.brand}</p>
-          <p><b>Category:</b> {product.category}</p>
-          <p><b>Stock:</b> {product.stock}</p>
-          <p><b>Dimensions:</b> Width: {product.dimensions?.width}, Height: {product.dimensions?.height}, Depth: {product.dimensions?.depth}</p>
-          <p><b>Warranty:</b> {product.warrantyInformation}</p>
-          <p><b>Shipping:</b> {product.shippingInformation}</p>
-          <button className="back-button c" aria-label="Back to product list" onClick={backToAll}>
-            Back
-          </button>
-        </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default ProductDetails;
+const styles = {
+  container: {
+    backgroundColor: "#f1f3f6",
+    padding: "20px 50px",
+    minHeight: "100vh",
+  },
+  title: {
+    textAlign: "center",
+    fontSize: "2rem",
+    marginBottom: "20px",
+    color: "#2874f0",
+  },
+  cardContainer: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    padding: "15px",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    position: "relative",
+    overflow: "hidden",
+    textAlign: "center",
+  },
+  imageWrapper: {
+    position: "relative",
+    marginBottom: "10px",
+  },
+  productImage: {
+    width: "100%",
+    height: "200px",
+    objectFit: "contain",
+    cursor: "pointer",
+  },
+  discountBadge: {
+    position: "absolute",
+    top: "10px",
+    left: "10px",
+    backgroundColor: "#ff6161",
+    color: "#fff",
+    padding: "5px 10px",
+    borderRadius: "5px",
+    fontSize: "0.8rem",
+    fontWeight: "bold",
+  },
+  productTitle: {
+    fontSize: "1.3rem",
+    fontWeight: "600",
+    marginBottom: "10px",
+    color: "#333",
+  },
+  productDescription: {
+    color: "#666",
+    fontSize: "0.9rem",
+    marginBottom: "15px",
+  },
+  priceSection: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "15px",
+  },
+  price: {
+    fontSize: "1.5rem",
+    fontWeight: "bold",
+    color: "#2874f0",
+  },
+  originalPrice: {
+    textDecoration: "line-through",
+    color: "#999",
+    fontSize: "1rem",
+  },
+  flex: {
+    display: "flex",
+    justifyContent: "space-between",
+    padding: "10px 0",
+  },
+  rating: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ratingBadge: {
+    backgroundColor: "#388e3c",
+    color: "#fff",
+    padding: "5px 8px",
+    borderRadius: "5px",
+    fontWeight: "bold",
+  },
+  additionalInfo: {
+    padding: "10px 0",
+    fontSize: "0.9rem",
+  },
+  sectionTitle: {
+    marginTop: "10px",
+    fontSize: "1.1rem",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  image: {
+    width: "80px",
+    height: "80px",
+  },
+  buyButton: {
+    backgroundColor: "#ff9f00",
+    color: "#fff",
+    padding: "10px 20px",
+    border: "none",
+    borderRadius: "5px",
+    fontSize: "1rem",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+  },
+};
+
+export default ProductCards;
+
+
